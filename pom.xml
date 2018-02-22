@@ -28,7 +28,9 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <executions>
                     <execution>
-                        <configuration><rules><dependencyConvergence /></rules></configuration>
+                        <configuration>
+                            <rules><dependencyConvergence /></rules>
+                        </configuration>
                         <goals><goal>enforce</goal></goals>
                     </execution>
                 </executions>
@@ -47,6 +49,9 @@
                         <goals><goal>test-compile</goal></goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <jvmTarget>1.8</jvmTarget>
+                </configuration>
             </plugin>
         </plugins>
     </build>
