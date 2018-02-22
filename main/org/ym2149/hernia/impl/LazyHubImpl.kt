@@ -1,11 +1,9 @@
-package net.corda.lazyhub
+package org.ym2149.hernia.impl
 
-import net.corda.core.internal.filterNotNull
-import net.corda.core.internal.toTypedArray
-import net.corda.core.internal.uncheckedCast
-import net.corda.lazyhub.JConcrete.Companion.validate
-import net.corda.lazyhub.KConcrete.Companion.validate
-import net.corda.lazyhub.KConstructor.Companion.validate
+import org.ym2149.hernia.impl.JConcrete.Companion.validate
+import org.ym2149.hernia.impl.KConcrete.Companion.validate
+import org.ym2149.hernia.impl.KConstructor.Companion.validate
+import org.ym2149.hernia.*
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.stream.Stream

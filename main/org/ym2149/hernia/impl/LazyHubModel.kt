@@ -1,8 +1,6 @@
-package net.corda.lazyhub
+package org.ym2149.hernia.impl
 
-import net.corda.core.internal.toMap
-import net.corda.core.internal.toTypedArray
-import net.corda.core.internal.uncheckedCast
+import org.ym2149.hernia.*
 import java.lang.reflect.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction

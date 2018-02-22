@@ -1,11 +1,9 @@
-package net.corda.lazyhub
+package org.ym2149.hernia
 
-import net.corda.core.serialization.CordaSerializable
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 
 /** Supertype of all exceptions thrown directly by [LazyHub]. */
-@CordaSerializable
 abstract class LazyHubException(message: String) : RuntimeException(message)
 
 /** The type can't be instantiated because it is abstract, i.e. it's an interface or abstract class. */
