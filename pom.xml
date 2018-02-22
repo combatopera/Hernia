@@ -9,7 +9,7 @@
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
+            <artifactId>kotlin-reflect</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
         <dependency>
@@ -37,6 +37,10 @@
                         <id>default-resources</id>
                         <phase>none</phase>
                     </execution>
+                    <execution>
+                        <id>default-testResources</id>
+                        <phase>none</phase>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -45,6 +49,10 @@
                 <executions>
                     <execution>
                         <id>default-compile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
                         <phase>none</phase>
                     </execution>
                 </executions>
