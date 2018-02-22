@@ -1,12 +1,12 @@
 package org.ym2149.hernia.impl
 
-import net.corda.core.internal.uncheckedCast
 import org.assertj.core.api.Assertions.catchThrowable
 import org.hamcrest.CoreMatchers.*
 import org.junit.Assert.*
 import org.junit.Ignore
 import org.junit.Test
 import org.ym2149.hernia.*
+import org.ym2149.hernia.util.uncheckedCast
 import java.io.Closeable
 import java.io.IOException
 import java.io.Serializable
