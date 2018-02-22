@@ -1,6 +1,9 @@
 package org.ym2149.hernia.impl
 
 import org.ym2149.hernia.*
+import org.ym2149.hernia.util.toMap
+import org.ym2149.hernia.util.toTypedArray
+import org.ym2149.hernia.util.uncheckedCast
 import java.lang.reflect.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
