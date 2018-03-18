@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.fail
 
 open class HerniaImplTest {
-    private val mh = hernia()
+    private val mh = mutableHernia()
 
     class Config(val info: String)
     interface A

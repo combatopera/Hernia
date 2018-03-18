@@ -33,7 +33,7 @@ import kotlin.reflect.KFunction
  * * If a Hernia can't satisfy a type (or array param) and has a parent, it asks the parent
  *     * Typically the root Hernia in the hierarchy will manage all singletons of the process
  */
-fun hernia(): MutableHernia = HerniaImpl(null)
+fun mutableHernia(): MutableHernia = HerniaImpl(null)
 
 private class SimpleProvider<T : Any>(override val obj: T) : Provider<T> {
     override val type get() = obj.javaClass
