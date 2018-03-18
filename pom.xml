@@ -25,6 +25,12 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </pluginRepository>
+    </pluginRepositories>
     <build>
         <sourceDirectory>${project.basedir}/main</sourceDirectory>
         <testSourceDirectory>${project.basedir}/test</testSourceDirectory>
@@ -60,12 +66,28 @@
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>3.0.0-M1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.github.strangefac</groupId>
+                        <artifactId>DOEGAC</artifactId>
+                        <version>1</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
+                        <id>DependencyConvergence</id>
                         <configuration>
                             <rules><dependencyConvergence /></rules>
                         </configuration>
                         <goals><goal>enforce</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>DOEGAC</id>
+                        <configuration>
+                            <rules><DOEGAC implementation="com.github.strangefac.doegac.DOEGAC" /></rules>
+                        </configuration>
+                        <goals><goal>enforce</goal></goals>
+                        <phase>test</phase>
                     </execution>
                 </executions>
             </plugin>
