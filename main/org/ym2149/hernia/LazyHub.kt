@@ -3,33 +3,33 @@ package org.ym2149.hernia
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 
-/** Supertype of all exceptions thrown directly by [LazyHub]. */
-abstract class LazyHubException(message: String) : RuntimeException(message)
+/** Supertype of all exceptions thrown directly by [Hernia]. */
+abstract class HerniaException(message: String) : RuntimeException(message)
 
 /** The type can't be instantiated because it is abstract, i.e. it's an interface or abstract class. */
-class AbstractTypeException(message: String) : LazyHubException(message)
+class AbstractTypeException(message: String) : HerniaException(message)
 
 /**
  * The class can't be instantiated because it has no public constructor.
- * This is so that you can easily hide a constructor from LazyHub by making it non-public.
+ * This is so that you can easily hide a constructor from Hernia by making it non-public.
  */
-class NoPublicConstructorsException(message: String) : LazyHubException(message)
+class NoPublicConstructorsException(message: String) : HerniaException(message)
 
 /**
- * Nullable factory return types are not supported, as LazyHub has no concept of a provider that MAY supply an object.
- * If you want an optional result, use logic to decide whether to add the factory to the lazyHub.
+ * Nullable factory return types are not supported, as Hernia has no concept of a provider that MAY supply an object.
+ * If you want an optional result, use logic to decide whether to add the factory to the hernia.
  */
-class NullableReturnTypeException(message: String) : LazyHubException(message)
+class NullableReturnTypeException(message: String) : HerniaException(message)
 
 /** The parameter can't be satisfied and doesn't have a default and isn't nullable. */
-abstract class UnsatisfiableParamException(message: String) : LazyHubException(message)
+abstract class UnsatisfiableParamException(message: String) : HerniaException(message)
 
 /** No provider has been registered for the wanted type. */
 class NoSuchProviderException(message: String) : UnsatisfiableParamException(message)
 
 /**
  * No provider has been registered for the component type of the wanted array.
- * Note that LazyHub does not create empty arrays, make the array param type nullable to accept no elements.
+ * Note that Hernia does not create empty arrays, make the array param type nullable to accept no elements.
  * This allows you to express zero-or-more (nullable) or one-or-more via the parameter type.
  */
 class UnsatisfiableArrayException(message: String) : UnsatisfiableParamException(message)
@@ -39,25 +39,25 @@ class TooManyProvidersException(message: String) : UnsatisfiableParamException(m
 
 /**
  * More than one public constructor is satisfiable and there is no clear winner.
- * The winner is the constructor with the most params for which LazyHub actually supplies an arg.
+ * The winner is the constructor with the most params for which Hernia actually supplies an arg.
  */
-class NoUniqueGreediestSatisfiableConstructorException(message: String) : LazyHubException(message)
+class NoUniqueGreediestSatisfiableConstructorException(message: String) : HerniaException(message)
 
 /** The object being created depends on itself, i.e. it's already being instantiated/factoried. */
-class CircularDependencyException(message: String) : LazyHubException(message)
+class CircularDependencyException(message: String) : HerniaException(message)
 
-/** Depend on this as a param (and add the [MutableLazyHub], which is a [LazyHubFactory], to itself) if you want to make child containers. */
-interface LazyHubFactory {
-    fun child(): MutableLazyHub
+/** Depend on this as a param (and add the [MutableHernia], which is a [HerniaFactory], to itself) if you want to make child containers. */
+interface HerniaFactory {
+    fun child(): MutableHernia
 }
 
 /**
- * Read-only interface to the lazyHub.
- * Where possible, always obtain your object via a constructor/method param instead of directly from the [LazyHub].
+ * Read-only interface to the hernia.
+ * Where possible, always obtain your object via a constructor/method param instead of directly from the [Hernia].
  * This results in the greatest automatic benefits to the codebase e.g. separation of concerns and ease of testing.
  * A notable exception to this rule is `getAll(Unit::class)` to (idempotently) run all side-effects.
  */
-interface LazyHub : LazyHubFactory {
+interface Hernia : HerniaFactory {
     operator fun <T : Any> get(clazz: KClass<T>) = get(clazz.java)
     operator fun <T> get(clazz: Class<T>) = getOrNull(clazz) ?: throw NoSuchProviderException(clazz.toString())
     fun <T : Any> getAll(clazz: KClass<T>) = getAll(clazz.java)
@@ -66,12 +66,12 @@ interface LazyHub : LazyHubFactory {
     fun <T> getOrNull(clazz: Class<T>): T?
 }
 
-/** Fully-featured interface to the lazyHub. */
-interface MutableLazyHub : LazyHub {
+/** Fully-featured interface to the hernia. */
+interface MutableHernia : Hernia {
     /** Register the given object against its class and all supertypes. */
     fun obj(obj: Any)
 
-    /** Like plain old [MutableLazyHub.obj] but removes all [service] providers first. */
+    /** Like plain old [MutableHernia.obj] but removes all [service] providers first. */
     fun <T : Any> obj(service: KClass<T>, obj: T)
 
     /**
@@ -81,12 +81,12 @@ interface MutableLazyHub : LazyHub {
     fun impl(impl: KClass<*>)
 
     /**
-     * Same as [MutableLazyHub.impl] if you don't have a static reference to the class.
+     * Same as [MutableHernia.impl] if you don't have a static reference to the class.
      * Note that Kotlin features such as nullable params and default args will not be available.
      */
     fun impl(impl: Class<*>)
 
-    /** Like plain old [MutableLazyHub.impl] but removes all [service] providers first. */
+    /** Like plain old [MutableHernia.impl] but removes all [service] providers first. */
     fun <S : Any, T : S> impl(service: KClass<S>, impl: KClass<T>)
 
     /** Like the [KClass] variant if you don't have a static reference fo the class. */
@@ -100,8 +100,8 @@ interface MutableLazyHub : LazyHub {
     fun factory(factory: KFunction<*>)
 
     /** Register a factory that provides the given type from the given hub. */
-    fun factory(lh: LazyHub, type: KClass<*>)
+    fun factory(lh: Hernia, type: KClass<*>)
 
-    /** Like plain old [MutableLazyHub.factory] but removes all [service] providers first. */
+    /** Like plain old [MutableHernia.factory] but removes all [service] providers first. */
     fun <S : Any, T : S> factory(service: KClass<S>, factory: KFunction<T>)
 }

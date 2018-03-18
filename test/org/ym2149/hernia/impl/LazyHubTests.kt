@@ -16,8 +16,8 @@ import kotlin.reflect.jvm.javaMethod
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-open class LazyHubTests {
-    private val lh = lazyHub()
+open class HerniaImplTest {
+    private val lh = hernia()
 
     class Config(val info: String)
     interface A
@@ -41,7 +41,7 @@ open class LazyHubTests {
         lh.impl(BImpl::class)
         lh.impl(Spectator::class)
         val b = lh[B::class]
-        // An impl is instantiated at most once per LazyHub:
+        // An impl is instantiated at most once per Hernia:
         assertSame(b.a, lh[A::class])
         assertSame(b, lh[B::class])
         // More specific type to expose config without casting:
@@ -65,7 +65,7 @@ open class LazyHubTests {
     }
 
     @Ignore
-    class Subclass : LazyHubTests() { // Should not run as tests.
+    class Subclass : HerniaImplTest() { // Should not run as tests.
         @Suppress("unused")
         private fun createA(@Suppress("UNUSED_PARAMETER") config: Config): A = fail("Should not be called.")
 
@@ -73,12 +73,12 @@ open class LazyHubTests {
     }
 
     @Suppress("MemberVisibilityCanPrivate")
-    internal fun addCreateATo(lh: MutableLazyHub) {
+    internal fun addCreateATo(lh: MutableHernia) {
         lh.factory(this::createA)
     }
 
     @Suppress("MemberVisibilityCanPrivate")
-    internal fun addCreateBTo(lh: MutableLazyHub) {
+    internal fun addCreateBTo(lh: MutableHernia) {
         lh.factory(this::createB)
     }
 
@@ -160,7 +160,7 @@ open class LazyHubTests {
         // First check it's actually legal to pass any old Closeable into the function:
         val arg = Closeable {}
         assertEquals(arg.toString(), ntv(arg))
-        // Good, now check LazyHub can do it:
+        // Good, now check Hernia can do it:
         val ntv: Function1<Closeable, String> = this::ntv
         lh.factory(uncheckedCast<Any, KFunction<String>>(ntv))
         lh.obj(arg)
@@ -318,7 +318,7 @@ open class LazyHubTests {
     fun `nullable return type is banned`() {
         catchThrowable { lh.factory(this::nrt) }.run {
             assertSame(NullableReturnTypeException::class.java, javaClass)
-            assertThat(message, endsWith(this@LazyHubTests::nrt.toString()))
+            assertThat(message, endsWith(this@HerniaImplTest::nrt.toString()))
         }
     }
 
@@ -407,7 +407,7 @@ open class LazyHubTests {
         catchThrowable { lh[C1::class] }.run {
             assertSame(CircularDependencyException::class.java, javaClass)
             assertThat(message, containsString("'${C2::class}'"))
-            assertThat(message, endsWith(listOf(C1::class.constructors.single(), C2::class.constructors.single(), this@LazyHubTests::c3).toString()))
+            assertThat(message, endsWith(listOf(C1::class.constructors.single(), C2::class.constructors.single(), this@HerniaImplTest::c3).toString()))
         }
     }
 
@@ -419,7 +419,7 @@ open class LazyHubTests {
         catchThrowable { lh[C1::class] }.run {
             assertSame(CircularDependencyException::class.java, javaClass)
             assertThat(message, containsString("'${C2::class}'"))
-            assertThat(message, endsWith(listOf(C1::class.constructors.single().javaConstructor, C2::class.constructors.single().javaConstructor, this@LazyHubTests::c3).toString()))
+            assertThat(message, endsWith(listOf(C1::class.constructors.single().javaConstructor, C2::class.constructors.single().javaConstructor, this@HerniaImplTest::c3).toString()))
         }
     }
 
@@ -513,7 +513,7 @@ open class LazyHubTests {
         // Type system won't let you pass in badService3, but I still want validation up-front:
         catchThrowable { lh.factory(Service::class, uncheckedCast(this::badService3)) }.run {
             assertSame(NullableReturnTypeException::class.java, javaClass)
-            assertEquals(this@LazyHubTests::badService3.toString(), message)
+            assertEquals(this@HerniaImplTest::badService3.toString(), message)
         }
         assertSame(GoodService::class.java, lh[Service::class].javaClass)
     }
@@ -568,7 +568,7 @@ open class LazyHubTests {
     }
 
     // Two params needed to make primary constructor the winner when both are satisfiable.
-    // It's probably true that the secondary will always trigger a CircularDependencyException, but LazyHub isn't clever enough to tell.
+    // It's probably true that the secondary will always trigger a CircularDependencyException, but Hernia isn't clever enough to tell.
     class InvocationSwitcher(@Suppress("UNUSED_PARAMETER") s: String, @Suppress("UNUSED_PARAMETER") t: String) {
         @Suppress("unused")
         constructor(same: InvocationSwitcher) : this(same.toString(), same.toString())

@@ -14,26 +14,26 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 
 /**
- * Create a new [MutableLazyHub] with no parent.
+ * Create a new [MutableHernia] with no parent.
  *
  * Basic usage:
- * * Add classes/factories/objects to the LazyHub using [MutableLazyHub.impl], [MutableLazyHub.factory] and [MutableLazyHub.obj]
- * * Then ask it for a type using [LazyHub.get] and it will create (and cache) the object graph for you
- * * You can use [LazyHub.getAll] to get all objects of a type, e.g. by convention pass in [Unit] to run side-effects
+ * * Add classes/factories/objects to the Hernia using [MutableHernia.impl], [MutableHernia.factory] and [MutableHernia.obj]
+ * * Then ask it for a type using [Hernia.get] and it will create (and cache) the object graph for you
+ * * You can use [Hernia.getAll] to get all objects of a type, e.g. by convention pass in [Unit] to run side-effects
  *
  * How it works:
- * * [LazyHub.get] finds the unique registered class/factory/object for the given type (or fails)
+ * * [Hernia.get] finds the unique registered class/factory/object for the given type (or fails)
  * * If it's an object, that object is returned
- * * If it's a factory, it is executed with args obtained recursively from the same LazyHub
+ * * If it's a factory, it is executed with args obtained recursively from the same Hernia
  * * If it's a class, it is instantiated using a public constructor in the same way as a factory
  *     * Of the public constructors that can be satisfied, the one that consumes the most args is chosen
  *
  * Advanced usage:
  * * Use an array parameter to get one-or-more args of the component type, make it nullable for zero-or-more
- * * If a LazyHub can't satisfy a type (or array param) and has a parent, it asks the parent
- *     * Typically the root LazyHub in the hierarchy will manage all singletons of the process
+ * * If a Hernia can't satisfy a type (or array param) and has a parent, it asks the parent
+ *     * Typically the root Hernia in the hierarchy will manage all singletons of the process
  */
-fun lazyHub(): MutableLazyHub = LazyHubImpl(null)
+fun hernia(): MutableHernia = HerniaImpl(null)
 
 private class SimpleProvider<T : Any>(override val obj: T) : Provider<T> {
     override val type get() = obj.javaClass
@@ -76,7 +76,7 @@ private infix fun Class<*>.isSatisfiedBy(clazz: Class<*>): Boolean {
     return isAssignableFrom(clazz) || autotypes[this] == clazz
 }
 
-private class LazyHubImpl(private val parent: LazyHubImpl?, private val busyProviders: BusyProviders = parent?.busyProviders ?: BusyProviders()) : MutableLazyHub {
+private class HerniaImpl(private val parent: HerniaImpl?, private val busyProviders: BusyProviders = parent?.busyProviders ?: BusyProviders()) : MutableHernia {
     private val providers = mutableMapOf<Class<*>, MutableList<Provider<*>>>()
     private fun add(provider: Provider<*>, type: Class<*> = provider.type, registered: MutableSet<Class<*>> = mutableSetOf()) {
         if (!registered.add(type)) return
@@ -111,7 +111,7 @@ private class LazyHubImpl(private val parent: LazyHubImpl?, private val busyProv
 
     override fun <T> getOrNull(clazz: Class<T>) = findProviders(clazz)?.run { (singleOrNull() ?: throw TooManyProvidersException(clazz.toString())).obj }
     override fun <T> getAll(clazz: Class<T>) = findProviders(clazz)?.map { it.obj } ?: emptyList()
-    override fun child(): MutableLazyHub = LazyHubImpl(this)
+    override fun child(): MutableHernia = HerniaImpl(this)
     override fun obj(obj: Any) = add(SimpleProvider(obj))
     override fun <T : Any> obj(service: KClass<T>, obj: T) {
         dropAll(service.java)
@@ -139,8 +139,8 @@ private class LazyHubImpl(private val parent: LazyHubImpl?, private val busyProv
         add(LazyProvider(busyProviders, factory, uncheckedCast(type)) { factory.toInvocation() })
     }
 
-    override fun factory(lh: LazyHub, type: KClass<*>) = addFactory(lh, type)
-    private fun <T : Any> addFactory(lh: LazyHub, type: KClass<T>) {
+    override fun factory(lh: Hernia, type: KClass<*>) = addFactory(lh, type)
+    private fun <T : Any> addFactory(lh: Hernia, type: KClass<T>) {
         add(LazyProvider(busyProviders, lh, type.java) { Callable { lh[type] } })
     }
 
