@@ -424,7 +424,7 @@ open class HerniaImplTest {
     }
 
     @Test
-    fun `ancestor hub providers are visible`() {
+    fun `ancestor hernia providers are visible`() {
         val c = Config("over here")
         lh.obj(c)
         lh.child().also {
@@ -438,7 +438,7 @@ open class HerniaImplTest {
     }
 
     @Test
-    fun `descendant hub providers are not visible`() {
+    fun `descendant hernia providers are not visible`() {
         val child = lh.child()
         child.obj(Config("over here"))
         lh.impl(AImpl::class)
@@ -446,7 +446,7 @@ open class HerniaImplTest {
             assertSame(NoSuchProviderException::class.java, javaClass)
             assertEquals(AImpl::class.constructors.single().parameters.single().toString(), message)
         }
-        // Fails even though we go via the child, as the cached AImpl in lh shouldn't have collaborators from descendant hubs:
+        // Fails even though we go via the child, as the cached AImpl in lh shouldn't have collaborators from descendant hernias:
         catchThrowable { child[AImpl::class] }.run {
             assertSame(NoSuchProviderException::class.java, javaClass)
             assertEquals(AImpl::class.constructors.single().parameters.single().toString(), message)
