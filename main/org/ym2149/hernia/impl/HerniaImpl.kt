@@ -139,9 +139,9 @@ private class HerniaImpl(private val parent: HerniaImpl?, private val busyProvid
         add(LazyProvider(busyProviders, factory, uncheckedCast(type)) { factory.toInvocation() })
     }
 
-    override fun factory(lh: Hernia, type: KClass<*>) = addFactory(lh, type)
-    private fun <T : Any> addFactory(lh: Hernia, type: KClass<T>) {
-        add(LazyProvider(busyProviders, lh, type.java) { Callable { lh[type] } })
+    override fun factory(h: Hernia, type: KClass<*>) = addFactory(h, type)
+    private fun <T : Any> addFactory(h: Hernia, type: KClass<T>) {
+        add(LazyProvider(busyProviders, h, type.java) { Callable { h[type] } })
     }
 
     override fun impl(impl: KClass<*>) = implGeneric(impl)

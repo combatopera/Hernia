@@ -100,7 +100,7 @@ interface MutableHernia : Hernia {
     fun factory(factory: KFunction<*>)
 
     /** Register a factory that provides the given type from the given hernia. */
-    fun factory(lh: Hernia, type: KClass<*>)
+    fun factory(h: Hernia, type: KClass<*>)
 
     /** Like plain old [MutableHernia.factory] but removes all [service] providers first. */
     fun <S : Any, T : S> factory(service: KClass<S>, factory: KFunction<T>)
