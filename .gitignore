@@ -3,3 +3,5 @@
 *.iml
 /pom.xml.releaseBackup
 /release.properties
+/.project
+/.settings/
