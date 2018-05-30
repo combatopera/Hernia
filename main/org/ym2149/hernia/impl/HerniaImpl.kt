@@ -1,9 +1,9 @@
 package org.ym2149.hernia.impl
 
+import org.ym2149.hernia.*
 import org.ym2149.hernia.impl.JConcrete.Companion.validate
 import org.ym2149.hernia.impl.KConcrete.Companion.validate
 import org.ym2149.hernia.impl.KConstructor.Companion.validate
-import org.ym2149.hernia.*
 import org.ym2149.hernia.util.filterNotNull
 import org.ym2149.hernia.util.toTypedArray
 import org.ym2149.hernia.util.uncheckedCast
@@ -111,6 +111,9 @@ private class HerniaImpl(private val parent: HerniaImpl?, private val busyProvid
 
     override fun <T> getOrNull(clazz: Class<T>) = findProviders(clazz)?.run { (singleOrNull() ?: throw TooManyProvidersException(clazz.toString())).obj }
     override fun <T> getAll(clazz: Class<T>) = findProviders(clazz)?.map { it.obj } ?: emptyList()
+    @Suppress("MoveSuspiciousCallableReferenceIntoParentheses")
+    override fun <T> allGetters(clazz: Class<T>) = findProviders(clazz)?.map { it::obj } ?: emptyList()
+
     override fun child(): MutableHernia = HerniaImpl(this)
     override fun obj(obj: Any) = add(SimpleProvider(obj))
     override fun <T : Any> obj(service: KClass<T>, obj: T) {
@@ -142,6 +145,10 @@ private class HerniaImpl(private val parent: HerniaImpl?, private val busyProvid
     override fun factory(h: Hernia, type: KClass<*>) = addFactory(h, type)
     private fun <T : Any> addFactory(h: Hernia, type: KClass<T>) {
         add(LazyProvider(busyProviders, h, type.java) { Callable { h[type] } })
+    }
+
+    override fun <T> factory(type: Class<T>, factory: () -> T) { // XXX: Any validation?
+        add(LazyProvider(busyProviders, factory, type, { Callable { factory() } }))
     }
 
     override fun impl(impl: KClass<*>) = implGeneric(impl)

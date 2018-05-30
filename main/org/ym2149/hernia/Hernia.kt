@@ -62,6 +62,8 @@ interface Hernia : HerniaFactory {
     operator fun <T> get(clazz: Class<T>) = getOrNull(clazz) ?: throw NoSuchProviderException(clazz.toString())
     fun <T : Any> getAll(clazz: KClass<T>) = getAll(clazz.java)
     fun <T> getAll(clazz: Class<T>): List<T>
+    fun <T : Any> allGetters(clazz: KClass<T>) = allGetters(clazz.java)
+    fun <T> allGetters(clazz: Class<T>): List<() -> T>
     fun <T : Any> getOrNull(clazz: KClass<T>) = getOrNull(clazz.java)
     fun <T> getOrNull(clazz: Class<T>): T?
 }
@@ -101,6 +103,12 @@ interface MutableHernia : Hernia {
 
     /** Register a factory that provides the given type from the given hernia. */
     fun factory(h: Hernia, type: KClass<*>)
+
+    /**
+     * Register a factory that provides the given type by the given function.
+     * This is useful if the other [factory] methods are awkward to use due to type erasure.
+     */
+    fun <T> factory(type: Class<T>, factory: () -> T)
 
     /** Like plain old [MutableHernia.factory] but removes all [service] providers first. */
     fun <S : Any, T : S> factory(service: KClass<S>, factory: KFunction<T>)
