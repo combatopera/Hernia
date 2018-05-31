@@ -76,7 +76,8 @@ private infix fun Class<*>.isSatisfiedBy(clazz: Class<*>): Boolean {
     return isAssignableFrom(clazz) || autotypes[this] == clazz
 }
 
-private class HerniaImpl(private val parent: HerniaImpl?, private val busyProviders: BusyProviders = parent?.busyProviders ?: BusyProviders()) : MutableHernia {
+private class HerniaImpl(private val parent: HerniaImpl?) : MutableHernia {
+    private val busyProviders: BusyProviders = parent?.busyProviders ?: BusyProviders()
     private val providers = mutableMapOf<Class<*>, MutableList<Provider<*>>>()
     private fun add(provider: Provider<*>, type: Class<*> = provider.type, registered: MutableSet<Class<*>> = mutableSetOf()) {
         if (!registered.add(type)) return
