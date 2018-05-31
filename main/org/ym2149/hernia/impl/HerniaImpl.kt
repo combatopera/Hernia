@@ -6,6 +6,7 @@ import org.ym2149.hernia.impl.KConcrete.Companion.validate
 import org.ym2149.hernia.impl.KConstructor.Companion.validate
 import org.ym2149.hernia.util.*
 import java.util.*
+import java.util.Collections.synchronizedMap
 import java.util.concurrent.Callable
 import java.util.stream.Stream
 import kotlin.reflect.KClass
@@ -49,9 +50,11 @@ private class Invocation<P, T>(val constructor: PublicConstructor<P, T>, val arg
 }
 
 private class BusyProviders {
-    private val busyProviders = mutableMapOf<LazyProvider<*>, Callable<*>>()
+    private val busyProviders = synchronizedMap(mutableMapOf<LazyProvider<*>, Callable<*>>()) // TODO: Locking probably needs to be less naive.
     fun <T> runFactory(provider: LazyProvider<T>): T {
-        provider in busyProviders && throw CircularDependencyException("Provider '$provider' is already busy: ${busyProviders.values}")
+        synchronized(busyProviders) {
+            provider in busyProviders && throw CircularDependencyException("Provider '$provider' is already busy: ${busyProviders.values}")
+        }
         val invocation = provider.chooseInvocation()
         busyProviders[provider] = invocation
         try {
@@ -73,34 +76,42 @@ private infix fun Class<*>.isSatisfiedBy(clazz: Class<*>): Boolean {
 
 private class HerniaImpl(private val parent: HerniaImpl?) : MutableHernia {
     private val busyProviders: BusyProviders = parent?.busyProviders ?: BusyProviders()
-    private val providers = mutableMapOf<Class<*>, MutableList<Provider<*>>>()
+    private val providers = synchronizedMap(mutableMapOf<Class<*>, MutableList<Provider<*>>>()) // TODO: Locking probably needs to be less naive.
     private fun add(provider: Provider<*>, type: Class<*> = provider.type, registered: MutableSet<Class<*>> = mutableSetOf()) {
         if (!registered.add(type)) return
-        providers[type]?.add(provider) ?: providers.put(type, mutableListOf(provider))
+        synchronized(providers) { providers[type]?.add(provider) ?: providers.put(type, mutableListOf(provider)) }
         Stream.concat(type.interfaces.stream(), Stream.of(type.superclass, autotypes[type]).filterNotNull()).forEach {
             add(provider, it, registered)
         }
     }
 
-    /** The non-empty list of providers, or null. */
-    private fun <T> findProviders(clazz: Class<T>): List<Provider<T>>? = uncheckedCast(providers[clazz]) ?: parent?.findProviders(clazz)
+    /** The non-empty snapshot of providers, or null. */
+    private fun <T> findProviders(clazz: Class<T>): Array<Provider<T>>? {
+        synchronized(providers) {
+            val liveList: List<Provider<T>>? = uncheckedCast(providers[clazz])
+            liveList != null && return liveList.toTypedArray()
+        }
+        return parent?.findProviders(clazz)
+    }
 
     private fun dropAll(serviceClass: Class<*>) {
         val removed = mutableSetOf<Provider<*>>()
-        providers.iterator().run {
-            while (hasNext()) {
-                val entry = next()
-                if (serviceClass isSatisfiedBy entry.key) {
-                    removed.addAll(entry.value)
-                    remove()
+        synchronized(providers) {
+            providers.iterator().run {
+                while (hasNext()) {
+                    val entry = next()
+                    if (serviceClass isSatisfiedBy entry.key) {
+                        removed.addAll(entry.value)
+                        remove()
+                    }
                 }
             }
-        }
-        providers.values.iterator().run {
-            while (hasNext()) {
-                val providers = next()
-                providers.removeAll(removed)
-                if (providers.isEmpty()) remove()
+            providers.values.iterator().run {
+                while (hasNext()) {
+                    val providers = next()
+                    providers.removeAll(removed)
+                    if (providers.isEmpty()) remove()
+                }
             }
         }
     }
