@@ -4,7 +4,7 @@
     <artifactId>hernia</artifactId>
     <version>3-SNAPSHOT</version>
     <properties>
-        <kotlin.version>1.2.21</kotlin.version>
+        <kotlin.version>1.1.60</kotlin.version>
     </properties>
     <scm>
         <developerConnection>scm:git:file://.</developerConnection>
