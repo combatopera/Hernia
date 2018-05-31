@@ -9,7 +9,8 @@ internal fun <T> Stream<out T>.toTypedArray(componentType: Class<T>): Array<T> =
     uncheckedCast<Any, Array<T?>>(java.lang.reflect.Array.newInstance(componentType, size))
 }
 
+internal fun <T> Array<out T>.stream() = Arrays.stream(this)!!
 internal fun <T> Stream<out T?>.filterNotNull(): Stream<T> = uncheckedCast(filter(Objects::nonNull))
-internal fun <K, V> Stream<out Pair<K, V>>.toMap(): Map<K, V> = collect<LinkedHashMap<K, V>>(::LinkedHashMap, { m, (k, v) -> m.put(k, v) }, { m, t -> m.putAll(t) })
+internal fun <K, V> Stream<out Pair<K, V>>.toMap(): Map<K, V> = collect<LinkedHashMap<K, V>>(::LinkedHashMap, { m, (k, v) -> m[k] = v }, { m, t -> m.putAll(t) })
 @Suppress("UNCHECKED_CAST")
 internal fun <T, U : T> uncheckedCast(obj: T) = obj as U

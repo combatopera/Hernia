@@ -4,9 +4,7 @@ import org.ym2149.hernia.*
 import org.ym2149.hernia.impl.JConcrete.Companion.validate
 import org.ym2149.hernia.impl.KConcrete.Companion.validate
 import org.ym2149.hernia.impl.KConstructor.Companion.validate
-import org.ym2149.hernia.util.filterNotNull
-import org.ym2149.hernia.util.toTypedArray
-import org.ym2149.hernia.util.uncheckedCast
+import org.ym2149.hernia.util.*
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.stream.Stream
@@ -53,24 +51,21 @@ private class Invocation<P, T>(val constructor: PublicConstructor<P, T>, val arg
 private class BusyProviders {
     private val busyProviders = mutableMapOf<LazyProvider<*>, Callable<*>>()
     fun <T> runFactory(provider: LazyProvider<T>): T {
-        if (busyProviders.contains(provider)) throw CircularDependencyException("Provider '$provider' is already busy: ${busyProviders.values}")
+        provider in busyProviders && throw CircularDependencyException("Provider '$provider' is already busy: ${busyProviders.values}")
         val invocation = provider.chooseInvocation()
-        busyProviders.put(provider, invocation)
+        busyProviders[provider] = invocation
         try {
             return invocation.call()
         } finally {
-            busyProviders.remove(provider)
+            busyProviders -= provider
         }
     }
 }
 
-private val autotypes: Map<Class<*>, Class<*>> = mutableMapOf<Class<*>, Class<*>>().apply {
-    Arrays::class.java.declaredMethods.filter { it.name == "hashCode" }.map { it.parameterTypes[0].componentType }.filter { it.isPrimitive }.forEach {
-        val boxed = java.lang.reflect.Array.get(java.lang.reflect.Array.newInstance(it, 1), 0).javaClass
-        put(it, boxed)
-        put(boxed, it)
-    }
-}
+private val autotypes = Arrays::class.java.declaredMethods.stream().filter { it.name == "hashCode" }.map { it.parameterTypes[0].componentType }.filter { it.isPrimitive }.flatMap {
+    val boxed = java.lang.reflect.Array.get(java.lang.reflect.Array.newInstance(it, 1), 0).javaClass
+    Stream.of(it to boxed, boxed to it)
+}.toMap()
 
 private infix fun Class<*>.isSatisfiedBy(clazz: Class<*>): Boolean {
     return isAssignableFrom(clazz) || autotypes[this] == clazz
@@ -82,7 +77,7 @@ private class HerniaImpl(private val parent: HerniaImpl?) : MutableHernia {
     private fun add(provider: Provider<*>, type: Class<*> = provider.type, registered: MutableSet<Class<*>> = mutableSetOf()) {
         if (!registered.add(type)) return
         providers[type]?.add(provider) ?: providers.put(type, mutableListOf(provider))
-        Stream.concat(Arrays.stream(type.interfaces), Stream.of(type.superclass, autotypes[type]).filterNotNull()).forEach {
+        Stream.concat(type.interfaces.stream(), Stream.of(type.superclass, autotypes[type]).filterNotNull()).forEach {
             add(provider, it, registered)
         }
     }
