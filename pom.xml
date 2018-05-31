@@ -2,13 +2,13 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.ym2149</groupId>
     <artifactId>hernia</artifactId>
-    <version>4-SNAPSHOT</version>
+    <version>4</version>
     <properties>
         <kotlin.version>1.1.60</kotlin.version>
     </properties>
     <scm>
         <developerConnection>scm:git:file://.</developerConnection>
-        <tag>HEAD</tag>
+        <tag>4</tag>
     </scm>
     <dependencies>
         <dependency>
