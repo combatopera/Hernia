@@ -75,6 +75,7 @@ private infix fun Class<*>.isSatisfiedBy(clazz: Class<*>): Boolean {
 }
 
 private class HerniaImpl(private val parent: HerniaImpl?) : MutableHernia {
+    // A single BusyProviders object per HerniaImpl tree should be fine, as due to lazy at most one thread per LazyProvider will invoke runFactory:
     private val busyProviders: BusyProviders = parent?.busyProviders ?: BusyProviders()
     private val providers = synchronizedMap(mutableMapOf<Class<*>, MutableList<Provider<*>>>()) // TODO: Locking probably needs to be less naive.
     private fun add(provider: Provider<*>, type: Class<*> = provider.type, registered: MutableSet<Class<*>> = mutableSetOf()) {
