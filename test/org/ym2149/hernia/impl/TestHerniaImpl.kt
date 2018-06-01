@@ -16,7 +16,7 @@ import kotlin.reflect.jvm.javaMethod
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-open class HerniaImplTest {
+open class TestHerniaImpl {
     private val mh = mutableHernia()
 
     class Config(val info: String)
@@ -65,7 +65,7 @@ open class HerniaImplTest {
     }
 
     @Ignore
-    class Subclass : HerniaImplTest() { // Should not run as tests.
+    class Subclass : TestHerniaImpl() { // Should not run as tests.
         @Suppress("unused")
         private fun createA(@Suppress("UNUSED_PARAMETER") config: Config): A = fail("Should not be called.")
 
@@ -318,7 +318,7 @@ open class HerniaImplTest {
     fun `nullable return type is banned`() {
         catchThrowable { mh.factory(this::nrt) }.run {
             assertSame(NullableReturnTypeException::class.java, javaClass)
-            assertThat(message, endsWith(this@HerniaImplTest::nrt.toString()))
+            assertThat(message, endsWith(this@TestHerniaImpl::nrt.toString()))
         }
     }
 
@@ -407,7 +407,7 @@ open class HerniaImplTest {
         catchThrowable { mh[C1::class] }.run {
             assertSame(CircularDependencyException::class.java, javaClass)
             assertThat(message, containsString("'${C2::class}'"))
-            assertThat(message, endsWith(listOf(C1::class.constructors.single(), C2::class.constructors.single(), this@HerniaImplTest::c3).toString()))
+            assertThat(message, endsWith(listOf(C1::class.constructors.single(), C2::class.constructors.single(), this@TestHerniaImpl::c3).toString()))
         }
     }
 
@@ -419,7 +419,7 @@ open class HerniaImplTest {
         catchThrowable { mh[C1::class] }.run {
             assertSame(CircularDependencyException::class.java, javaClass)
             assertThat(message, containsString("'${C2::class}'"))
-            assertThat(message, endsWith(listOf(C1::class.constructors.single().javaConstructor, C2::class.constructors.single().javaConstructor, this@HerniaImplTest::c3).toString()))
+            assertThat(message, endsWith(listOf(C1::class.constructors.single().javaConstructor, C2::class.constructors.single().javaConstructor, this@TestHerniaImpl::c3).toString()))
         }
     }
 
@@ -513,7 +513,7 @@ open class HerniaImplTest {
         // Type system won't let you pass in badService3, but I still want validation up-front:
         catchThrowable { mh.factory(Service::class, uncheckedCast(this::badService3)) }.run {
             assertSame(NullableReturnTypeException::class.java, javaClass)
-            assertEquals(this@HerniaImplTest::badService3.toString(), message)
+            assertEquals(this@TestHerniaImpl::badService3.toString(), message)
         }
         assertSame(GoodService::class.java, mh[Service::class].javaClass)
     }

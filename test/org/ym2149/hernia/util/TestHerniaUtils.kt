@@ -6,7 +6,7 @@ import java.io.Serializable
 import java.util.stream.Stream
 import kotlin.test.assertEquals
 
-class HerniaUtilsTest {
+class TestHerniaUtils {
     @Test
     fun `Stream toTypedArray works`() {
         val a: Array<String> = Stream.of("one", "two").toTypedArray()
